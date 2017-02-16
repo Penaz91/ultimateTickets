@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -129,6 +130,53 @@ public abstract class Database {
             }
         }
         return null; 
+    }
+    
+    public int closeTicket(String id){
+	   Connection conn = null;
+       PreparedStatement ps = null;
+       try {
+           conn = getSQLConnection();
+           ps = conn.prepareStatement("UPDATE Tickets SET Status=\"Closed\" WHERE ID=\"" + id + "\";");
+           ps.executeUpdate();
+       } catch (SQLException ex) {
+           plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+       } finally {
+           try {
+               if (ps != null)
+                   ps.close();
+               if (conn != null)
+                   conn.close();
+           } catch (SQLException ex) {
+               plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+           }
+       }
+    	return 0;
+    }
+    
+    public int addComment(String id, String comment){
+    	Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getSQLConnection();
+            String qry= "INSERT INTO Comments (TicketID, Text) VALUES (" + id + ",\"" + comment + "\");";
+            Bukkit.getLogger().info(qry);
+            ps = conn.prepareStatement(qry);
+            ps.executeUpdate();
+            //conn.close();
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null && !ps.isClosed())
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+        return 0; 
     }
     
     public Map<String, String> getTicketInfo(String id){
@@ -280,4 +328,32 @@ public abstract class Database {
             Error.close(plugin, ex);
         }
     }
+
+	public ArrayList<String> getComments(String id) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement("SELECT Text FROM Comments WHERE TicketID = " + id + " ORDER BY ID;");
+            rs = ps.executeQuery();
+            ArrayList<String> res = new ArrayList<String>();
+            while(rs.next()){
+            	res.add(rs.getString("Text"));
+            }
+            return res;
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+		return null;
+	}
 }
