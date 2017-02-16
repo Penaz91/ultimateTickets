@@ -1,0 +1,12 @@
+name: ultimateTickets
+main: main.Main
+version: 0.0.1-SNAPSHOT
+
+
+commands:
+    ticket:
+        description: Allows the usage of the /ticket command
+        usage: /ticket
+        aliases: [tkt]
+        permission: ultimateTickets.ticket
+        permission-message: You need the ultimateTickets.ticket permission to execute this command
