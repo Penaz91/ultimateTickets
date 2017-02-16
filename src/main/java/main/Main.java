@@ -32,7 +32,7 @@ public class Main extends JavaPlugin{
 		if (cmd.getName().equalsIgnoreCase("ticket")) {
 			if (sender instanceof Player){
 				if (args[0].equalsIgnoreCase("new") || args[0].equalsIgnoreCase("n")){
-					//permission check here
+					//TODO: permission check here
 					String desc = "";
 					for (int i=1; i < args.length; i++){
 						desc += args[i] + " ";
@@ -41,7 +41,7 @@ public class Main extends JavaPlugin{
 					return x == 0;
 				}
 				if (args[0].equalsIgnoreCase("teleport") || args[0].equalsIgnoreCase("tp")){
-					//permission check here
+					//TODO: permission check here
 					if (args.length < 3){
 						String id = args[1];
 						Map<String, String> rs = getRDatabase().getTicketLocation(id);
@@ -59,7 +59,7 @@ public class Main extends JavaPlugin{
 					}
 				}
 				if (args[0].equalsIgnoreCase("view")||args[0].equalsIgnoreCase("v")){
-					//permission check here
+					//TODO: permission check here
 					if (args.length < 3){
 						sender.sendMessage("Usage: /ticket view <comment|hotspot|info> ID");
 					}else{
@@ -91,10 +91,20 @@ public class Main extends JavaPlugin{
 					}
 					return true;
 				}
+				if (args[0].equalsIgnoreCase("claim")){
+					//TODO: Stub, needs tests
+					//return getRDatabase().assignTicket(((Player) sender).getName(), args[1]) == 0;
+					return getRDatabase().setTicket("Assignee=\"" + ((Player) sender).getName() + " WHERE ID=" + args[1] + "\"")==0;
+					
+				}
+				if (args[0].equalsIgnoreCase("assign")){
+					//TODO: Stub, needs tests
+					//return getRDatabase().assignTicket(args[2], args[1]) == 0;
+					return getRDatabase().setTicket("Assignee=\"" + args[2] + " WHERE ID=" + args[1] + "\"")==0;
+				}
 				if (args[0].equalsIgnoreCase("close")||args[0].equalsIgnoreCase("c")){
-					String id = args[1];
 					// TODO: Return message to user and verify for no ID
-					return getRDatabase().closeTicket(id) == 0;
+					return getRDatabase().setTicket("Status=\"Closed\" WHERE ID=" + args[1] + "\"")==0;
 				}
 				if (args[0].equalsIgnoreCase("comment")||args[0].equalsIgnoreCase("com")){
 					String id = args[1];
@@ -115,7 +125,8 @@ public class Main extends JavaPlugin{
 						sender.sendMessage("Usage: /ticket list <open|all|unassigned|mine>");
 					}else{
 						if (args[1].equalsIgnoreCase("open")){
-							Map<String, String> rs = getRDatabase().getTicketHeaders();
+							//Map<String, String> rs = getRDatabase().getOpenTicketHeaders();
+							Map<String, String> rs = getRDatabase().getTicketHeaders("Status='Open'");
 							//TODO: There is no pagination!
 							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 							for(Map.Entry<String, String> entry: rs.entrySet()){
@@ -124,18 +135,40 @@ public class Main extends JavaPlugin{
 							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");							
 						}
 						if (args[1].equalsIgnoreCase("unassigned")){
-							//TODO: Stub
+							//Map<String, String> rs = getRDatabase().getUnassignedTicketHeaders();
+							Map<String, String> rs = getRDatabase().getTicketHeaders("Assignee IS NULL AND Status='Open'");
+							//TODO: There is no pagination!
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
+							for(Map.Entry<String, String> entry: rs.entrySet()){
+								sender.sendMessage(ChatColor.RED + "[" + entry.getKey() + "] " + ChatColor.GOLD + entry.getValue());
+							}
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");							
+						}
 						}
 						if (args[1].equalsIgnoreCase("mine")){
-							//TODO: Stub
+							//Map<String, String> rs = getRDatabase().getPlayerTicketHeaders(((Player) sender));
+							Map<String, String> rs=getRDatabase().getTicketHeaders("Status='Open' AND Assignee =\"" + ((Player) sender).getName() + "\"" );
+							//TODO: There is no pagination!
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
+							for(Map.Entry<String, String> entry: rs.entrySet()){
+								sender.sendMessage(ChatColor.RED + "[" + entry.getKey() + "] " + ChatColor.GOLD + entry.getValue());
+							}
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 						}
 						if (args[1].equalsIgnoreCase("all")){
-							//TODO: Stub
+							//Map<String, String> rs = getRDatabase().getAllTicketHeaders();
+							//Workaround-ish
+							Map<String, String> rs = getRDatabase().getTicketHeaders("1 = 1");
+							//TODO: There is no pagination!
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
+							for(Map.Entry<String, String> entry: rs.entrySet()){
+								sender.sendMessage(ChatColor.RED + "[" + entry.getKey() + "] " + ChatColor.GOLD + entry.getValue());
+							}
+							sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 						}
 					}	
 				}
 			}
-		}
 		return true;
 	}
 }

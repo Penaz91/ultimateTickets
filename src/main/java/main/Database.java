@@ -101,13 +101,13 @@ public abstract class Database {
         return null; 
     }
     
-    public Map<String, String> getTicketHeaders(){
+    public Map<String, String> getTicketHeaders(String condition){
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             conn = getSQLConnection();
-            ps = conn.prepareStatement("SELECT ID, Label, Description FROM Tickets WHERE Status = 'Open';");
+            ps = conn.prepareStatement("SELECT ID, Label, Description FROM Tickets WHERE "+ condition +";");
             rs = ps.executeQuery();
             Map<String, String> res = new HashMap<String, String>();
             while(rs.next()){
@@ -132,7 +132,29 @@ public abstract class Database {
         return null; 
     }
     
-    public int closeTicket(String id){
+    public int setTicket(String instruction){
+    	Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement("UPDATE Tickets SET "+ instruction + ";");
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+     	return 0;
+    }
+    
+/*    public int closeTicket(String id){
 	   Connection conn = null;
        PreparedStatement ps = null;
        try {
@@ -153,6 +175,29 @@ public abstract class Database {
        }
     	return 0;
     }
+    
+    public int assignTicket(String pl, String id){
+	   Connection conn = null;
+       PreparedStatement ps = null;
+       try {
+           conn = getSQLConnection();
+           ps = conn.prepareStatement("UPDATE Tickets SET Assignee=\"" + pl + "\" WHERE ID=" + id + ";");
+           ps.executeUpdate();
+       } catch (SQLException ex) {
+           plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+       } finally {
+           try {
+               if (ps != null)
+                   ps.close();
+               if (conn != null)
+                   conn.close();
+           } catch (SQLException ex) {
+               plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+           }
+       }
+    	return 0;
+    }*/
+    
     
     public int addComment(String id, String comment){
     	Connection conn = null;
@@ -220,104 +265,7 @@ public abstract class Database {
         }
         return null; 
     }
-    // These are the methods you can use to get things out of your database. You of course can make new ones to return different things in the database.
-    // This returns the number of people the player killed.
-    /*public Integer getTokens(String string) {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = getSQLConnection();
-            ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE player = '"+string+"';");
-     
-            rs = ps.executeQuery();
-            conn.close();
-            while(rs.next()){
-                if(rs.getString("player").equalsIgnoreCase(string.toLowerCase())){ // Tell database to search for the player you sent into the method. e.g getTokens(sam) It will look for sam.
-                    return rs.getInt("kills"); // Return the players amount of kills. If you wanted to get total (just a random number for an example for you guys) You would change this to total!
-                }
-            }
-        } catch (SQLException ex) {
-            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
-            }
-        }
-        return 0; 
-    }
-    // Exact same method here, Except as mentioned above i am looking for total!
-    public Integer getTotal(String string) {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = getSQLConnection();
-            ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE player = '"+string+"';");
-     
-            rs = ps.executeQuery();
-            conn.close();
-            while(rs.next()){
-                if(rs.getString("player").equalsIgnoreCase(string.toLowerCase())){
-                    return rs.getInt("total");
-                }
-            }
-        } catch (SQLException ex) {
-            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
-            }
-        }
-        return 0; 
-    }
-
-// Now we need methods to save things to the database
-    public void setTokens(Player player, Integer tokens, Integer total) {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = getSQLConnection();
-            ps = conn.prepareStatement("REPLACE INTO " + table + " (player,kills,total) VALUES(?,?,?)"); // IMPORTANT. In SQLite class, We made 3 colums. player, Kills, Total.
-            ps.setString(1, player.getName().toLowerCase());                                             // YOU MUST put these into this line!! And depending on how many
-                                                                                                         // colums you put (say you made 5) All 5 need to be in the brackets
-                                                                                                         // Seperated with comma's (,) AND there needs to be the same amount of
-                                                                                                         // question marks in the VALUES brackets. Right now i only have 3 colums
-                                                                                                         // So VALUES (?,?,?) If you had 5 colums VALUES(?,?,?,?,?)
-                                                                                                  
-            ps.setInt(2, tokens); // This sets the value in the database. The colums go in order. Player is ID 1, kills is ID 2, Total would be 3 and so on. you can use
-                                  // setInt, setString and so on. tokens and total are just variables sent in, You can manually send values in as well. p.setInt(2, 10) <-
-                                  // This would set the players kills instantly to 10. Sorry about the variable names, It sets their kills to 10 i just have the variable called
-                                  // Tokens from another plugin :/
-            ps.setInt(3, total);
-            ps.executeUpdate();
-            return;
-        } catch (SQLException ex) {
-            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
-            }
-        }
-        return;         
-    }*/
-
-
+    
     public void close(PreparedStatement ps,ResultSet rs){
         try {
             if (ps != null)

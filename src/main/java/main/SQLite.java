@@ -42,10 +42,12 @@ public class SQLite extends Database{
     "CREATE TABLE IF NOT EXISTS Comments(" + 
     "`ID` INTEGER PRIMARY KEY,"+
     "`TicketID` INTEGER REFERENCES Tickets(ID),"+
+    "`Commenter` VARCHAR(255)," +
     "`Text` VARCHAR(255));"+
     "CREATE TABLE IF NOT EXISTS HotSpots("+
     "`ID` INTEGER PRIMARY KEY,"+
     "`TicketID` INTEGER REFERENCES Tickets(ID),"+
+    "`Commenter` VARCHAR(255)," +
     "`Text` VARCHAR(255),"+
     "`World` VARCHAR(255),"+
     "`x` INTEGER NOT NULL,"+
