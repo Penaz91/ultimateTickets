@@ -70,13 +70,17 @@ public abstract class Database {
         return 0; 
     }
     
-    public Map<String, String> getTicketLocation(String id){
+    public Map<String, String> getTicketLocation(String id, String hs){
     	Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             conn = getSQLConnection();
-            ps = conn.prepareStatement("SELECT world, x, y, z, pitch, yaw FROM Tickets WHERE ID = \""+id+"\";");
+            if (hs==""){
+            	ps = conn.prepareStatement("SELECT world, x, y, z, pitch, yaw FROM Tickets WHERE ID = \""+id+"\";");
+            }else{
+            	ps = conn.prepareStatement("SELECT world, x, y, z, pitch, yaw FROM HotSpots WHERE TicketID = \""+id+"\" AND ID=\"" + hs + "\";");
+            }
             rs = ps.executeQuery();
             Map<String, String> mp = new HashMap<String, String>();
             mp.put("World", rs.getString("World"));
@@ -199,12 +203,12 @@ public abstract class Database {
     }*/
     
     
-    public int addComment(String id, String comment){
+    public int addComment(String id, String pl, String comment){
     	Connection conn = null;
         PreparedStatement ps = null;
         try {
             conn = getSQLConnection();
-            String qry= "INSERT INTO Comments (TicketID, Text) VALUES (" + id + ",\"" + comment + "\");";
+            String qry= "INSERT INTO Comments (TicketID, Commenter, Text) VALUES (" + id + ",\"" + pl + "\",\"" + comment + "\");";
             Bukkit.getLogger().info(qry);
             ps = conn.prepareStatement(qry);
             ps.executeUpdate();
@@ -302,6 +306,60 @@ public abstract class Database {
                 plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
             }
         }
+		return null;
+	}
+
+	public int addHotSpot(String id, Player player, String comment) {
+		Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getSQLConnection();
+            Location loc = player.getLocation();
+            String qry= "INSERT INTO HotSpots (TicketID, Commenter, World, x, y, z, pitch, yaw, Text) VALUES (" + id + ",\"" + player.getName() + "\",\"" + loc.getWorld().getName() + "\"," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + loc.getPitch() + "," + loc.getYaw() + ",\"" + comment + "\");";
+            Bukkit.getLogger().info(qry);
+            ps = conn.prepareStatement(qry);
+            ps.executeUpdate();
+            //conn.close();
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null && !ps.isClosed())
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+		return 0;
+	}
+
+	public ArrayList<String> getHotSpots(String id) {
+		 Connection conn = null;
+	        PreparedStatement ps = null;
+	        ResultSet rs = null;
+	        try {
+	            conn = getSQLConnection();
+	            ps = conn.prepareStatement("SELECT ID, Text FROM HotSpots WHERE TicketID = " + id + " ORDER BY ID;");
+	            rs = ps.executeQuery();
+	            ArrayList<String> res = new ArrayList<String>();
+	            while(rs.next()){
+	            	res.add(rs.getString("ID") + " - " +rs.getString("Text"));
+	            }
+	            return res;
+	        } catch (SQLException ex) {
+	            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+	        } finally {
+	            try {
+	                if (ps != null)
+	                    ps.close();
+	                if (conn != null)
+	                    conn.close();
+	            } catch (SQLException ex) {
+	                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+	            }
+	        }
 		return null;
 	}
 }
