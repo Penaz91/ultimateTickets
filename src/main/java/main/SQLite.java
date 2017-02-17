@@ -26,7 +26,7 @@ public class SQLite extends Database{
             "PRIMARY KEY (`player`)" +  // This is creating 3 colums Player, Kills, Total. Primary key is what you are going to use as your indexer. Here we want to use player so
             ");"; // we can search by player, and get kills and total. If you some how were searching kills it would provide total and player.
 */
-    public String SQLiteCreateTokensTable = "CREATE TABLE IF NOT EXISTS Tickets(" +
+    public String SQLiteCreateTokensTable = "PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS Tickets(" +
     "`ID` INTEGER PRIMARY KEY," + 
     "`Owner` VARCHAR(40) NOT NULL," +
     "`Description` VARCHAR(255) NOT NULL," +
@@ -41,12 +41,13 @@ public class SQLite extends Database{
     "`yaw` INTEGER NOT NULL);"+
     "CREATE TABLE IF NOT EXISTS Comments(" + 
     "`ID` INTEGER PRIMARY KEY,"+
-    "`TicketID` INTEGER REFERENCES Tickets(ID),"+
+    "`TicketID` INTEGER,"+
     "`Commenter` VARCHAR(255)," +
-    "`Text` VARCHAR(255));"+
+    "`Text` VARCHAR(255),"
+    + "FOREIGN KEY (TicketID) REFERENCES Tickets(ID) ON DELETE CASCADE);"+
     "CREATE TABLE IF NOT EXISTS HotSpots("+
     "`ID` INTEGER PRIMARY KEY,"+
-    "`TicketID` INTEGER REFERENCES Tickets(ID),"+
+    "`TicketID` INTEGER,"+
     "`Commenter` VARCHAR(255)," +
     "`Text` VARCHAR(255),"+
     "`World` VARCHAR(255),"+
@@ -54,7 +55,8 @@ public class SQLite extends Database{
     "`y` INTEGER NOT NULL,"+
     "`z` INTEGER NOT NULL,"+
     "`pitch` INTEGER NOT NULL,"+
-    "`yaw` INTEGER NOT NULL);";
+    "`yaw` INTEGER NOT NULL,"
+    + "FOREIGN KEY (TicketID) REFERENCES Ticket(ID) ON DELETE CASCADE);";
 
     // SQL creation stuff, You can leave the blow stuff untouched.
     public Connection getSQLConnection() {
