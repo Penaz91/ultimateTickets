@@ -117,7 +117,7 @@ public class Main extends JavaPlugin{
 							if (args[1].equalsIgnoreCase("info")){
 								String id = args[2];
 								Map<String, String> rs = getRDatabase().getTicketInfo(id);
-								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner") == ((Player) sender).getName()){
+								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner").equals(((Player) sender).getName())){
 									rs.putAll(getRDatabase().getTicketLocation(id,""));
 									sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 									sender.sendMessage(ChatColor.RED + "ID: " + ChatColor.GOLD + rs.get("ID") + "      " + ChatColor.RED + "Owner: " + ChatColor.GOLD + rs.get("Owner"));
@@ -133,7 +133,7 @@ public class Main extends JavaPlugin{
 							if (args[1].equalsIgnoreCase("hotspot")){
 								String id = args[2];
 								Map<String, String> rs = getRDatabase().getTicketInfo(id);
-								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner") == ((Player) sender).getName()){
+								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner").equals(((Player) sender).getName())){
 									ArrayList<String> cmts = getRDatabase().getHotSpots(id);
 									for (String item: cmts){
 										sender.sendMessage(ChatColor.GOLD + item);
@@ -143,7 +143,7 @@ public class Main extends JavaPlugin{
 							if (args[1].equalsIgnoreCase("comment")){
 								String id = args[2];
 								Map<String, String> rs = getRDatabase().getTicketInfo(id);
-								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner") == ((Player) sender).getName()){
+								if (sender.hasPermission("ultimateTickets.viewall") || rs.get("Owner").equals(((Player) sender).getName())){
 									ArrayList<String> cmts = getRDatabase().getComments(id);
 									for (String item: cmts){
 										sender.sendMessage(ChatColor.GOLD + item);
@@ -198,7 +198,7 @@ public class Main extends JavaPlugin{
 					if (args[0].equalsIgnoreCase("comment")||args[0].equalsIgnoreCase("com")){
 						String id = args[1];
 						Map<String, String> rs = getRDatabase().getTicketInfo(id);
-						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner") == ((Player) sender).getName()){
+						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getName())){
 							String comment = "";
 							for (int i = 2; i < args.length; i++){
 								comment += args[i] + " ";
@@ -218,7 +218,7 @@ public class Main extends JavaPlugin{
 					if (args[0].equalsIgnoreCase("hotspot")||args[0].equalsIgnoreCase("hs")){
 						String id = args[1];
 						Map<String, String> rs = getRDatabase().getTicketInfo(id);
-						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner") == ((Player) sender).getName()){
+						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getName())){
 							String comment = "";
 							for (int i = 2; i < args.length; i++){
 								comment += args[i] + " ";
