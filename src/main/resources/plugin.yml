@@ -1,5 +1,5 @@
 name: ultimateTickets
-main: main.Main
+main: ticketmain.Main
 version: 0.0.1-SNAPSHOT
 
 
