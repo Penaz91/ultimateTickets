@@ -14,6 +14,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import com.sk89q.squirrelid.Profile;
+
 //import Error; // YOU MUST IMPORT THE CLASS ERROR, AND ERRORS!!!
 //import Errors;
 //import Main; // Import main class!
@@ -54,6 +56,7 @@ public abstract class Database {
             conn = getSQLConnection();
 //            ps = conn.prepareStatement("INSERT INTO Tickets (Owner, Description, Status, World, x, y, z, pitch, yaw) VALUES (\"" + pl.getName() + "\",\""+description+"\", \"Open\",\""+ pll.getWorld().getName() + "\"," +pll.getX()+","+pll.getY()+","+pll.getZ()+","+pll.getPitch()+","+pll.getYaw()+");");
             ps = conn.prepareStatement("INSERT INTO Tickets (Owner, Description, Status, World, x, y, z, pitch, yaw) VALUES (\"" + pl.getUniqueId().toString() + "\",\""+description+"\", \"Open\",\""+ pll.getWorld().getName() + "\"," +pll.getX()+","+pll.getY()+","+pll.getZ()+","+pll.getPitch()+","+pll.getYaw()+");");
+            Main.cache.put(new Profile(pl.getUniqueId(), pl.getName()));
             status=ps.executeUpdate();    
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
@@ -338,6 +341,7 @@ public abstract class Database {
             Location loc = player.getLocation();
 //            ps = conn.prepareStatement("INSERT INTO HotSpots (TicketID, Commenter, World, x, y, z, pitch, yaw, Text) VALUES (" + id + ",\"" + player.getName() + "\",\"" + loc.getWorld().getName() + "\"," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + loc.getPitch() + "," + loc.getYaw() + ",\"" + comment + "\");");
             ps = conn.prepareStatement("INSERT INTO HotSpots (TicketID, Commenter, World, x, y, z, pitch, yaw, Text) VALUES (" + id + ",\"" + player.getUniqueId().toString() + "\",\"" + loc.getWorld().getName() + "\"," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + loc.getPitch() + "," + loc.getYaw() + ",\"" + comment + "\");");
+            Main.cache.put(new Profile(player.getUniqueId(), player.getName()));
             ps.executeUpdate();
             //conn.close();
         } catch (SQLException ex) {

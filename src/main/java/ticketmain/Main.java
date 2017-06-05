@@ -1,6 +1,7 @@
 package ticketmain;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,10 +18,14 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sk89q.squirrelid.Profile;
+import com.sk89q.squirrelid.cache.SQLiteCache;
+
 public class Main extends JavaPlugin{
 	static final String logo = ChatColor.RED + "[" + ChatColor.GOLD + "UltimateTickets" + ChatColor.RED + "] " + ChatColor.GOLD;
 	static Configuration config;
 	static boolean sendEmail;
+	static SQLiteCache cache = null;
 
     private Database db;
 
@@ -34,6 +39,12 @@ public class Main extends JavaPlugin{
 		sendEmail = config.getBoolean("sendMail");
         this.db = new SQLite(this);
         this.db.load();
+        File file = new File(getDataFolder(), "UUIDcache.sqlite");
+        try {
+			cache = new SQLiteCache(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
 	public Database getRDatabase() {
@@ -151,9 +162,14 @@ public class Main extends JavaPlugin{
 									sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 									String playerName = "";
 									try{
-										playerName = Bukkit.getPlayer(UUID.fromString(rs.get("Owner"))).getName();
+										playerName = Bukkit.getPlayer(UUID.fromString(rs.get("Owner"))).getName() + "[Online]";
 									}catch (NullPointerException e){
-										playerName = "<UNKNOWN PLAYER>";
+										Profile profile = cache.getIfPresent(UUID.fromString(rs.get("Owner")));
+										if (profile == null){
+											playerName = "<UNKNOWN PLAYER>";
+										}else{
+											playerName = profile.getName() + "[LKN]";
+										}
 									}
 									sender.sendMessage(ChatColor.RED + "ID: " + ChatColor.GOLD + rs.get("ID") + "      " + ChatColor.RED + "Owner: " + ChatColor.GOLD + playerName);
 									sender.sendMessage(ChatColor.RED + "Status: " + ChatColor.GOLD + rs.get("Status") + "      " + ChatColor.RED + "Assigned to: " + ChatColor.GOLD + rs.get("Assignee"));
