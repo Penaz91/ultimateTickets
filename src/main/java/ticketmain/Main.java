@@ -20,6 +20,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.SQLiteCache;
+import com.sk89q.squirrelid.resolver.HttpRepositoryService;
+import com.sk89q.squirrelid.resolver.ProfileService;
 
 public class Main extends JavaPlugin{
 	static final String logo = ChatColor.RED + "[" + ChatColor.GOLD + "UltimateTickets" + ChatColor.RED + "] " + ChatColor.GOLD;
@@ -76,7 +78,7 @@ public class Main extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "/ticket close <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Close a ticket");
 					}
 					if (sender.hasPermission("ultimateTickets.assign")){
-						sender.sendMessage(ChatColor.RED + "/ticket assign <ID> <Text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to a player or category");
+						sender.sendMessage(ChatColor.RED + "/ticket assign <ID> <Text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to another staff player");
 						sender.sendMessage(ChatColor.RED + "/ticket claim <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to yourself");
 					}
 					if (sender.hasPermission("ultimateTickets.label")){
@@ -90,6 +92,9 @@ public class Main extends JavaPlugin{
 					}
 					if (sender.hasPermission("ultimateTickets.reopen")){
 						sender.sendMessage(ChatColor.RED + "/ticket reopen <ID>" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reopen a closed ticket");
+					}
+					if (sender.hasPermission("ultimateTickets.selfCaching")){
+						sender.sendMessage(ChatColor.RED + "/ticket cachemyname" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Force the caching of your UUID and Nickname, use in case of <Unknown player> in the 'assignee' field");
 					}
 				}else{
 					if (args[0].equalsIgnoreCase("new") || args[0].equalsIgnoreCase("n")){
@@ -161,6 +166,7 @@ public class Main extends JavaPlugin{
 									rs.putAll(getRDatabase().getTicketLocation(id,""));
 									sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 									String playerName = "";
+									String assignee = "";
 									try{
 										playerName = Bukkit.getPlayer(UUID.fromString(rs.get("Owner"))).getName() + "[Online]";
 									}catch (NullPointerException e){
@@ -171,8 +177,18 @@ public class Main extends JavaPlugin{
 											playerName = profile.getName() + "[LKN]";
 										}
 									}
+									try{
+										assignee = Bukkit.getPlayer(UUID.fromString(rs.get("Assignee"))).getName() + "[Online]";
+									}catch (NullPointerException e){
+										Profile profile = cache.getIfPresent(UUID.fromString(rs.get("Owner")));
+										if (profile == null){
+											assignee = "<UNKNOWN PLAYER>";
+										}else{
+											assignee = profile.getName() + "[LKN]";
+										}
+									}
 									sender.sendMessage(ChatColor.RED + "ID: " + ChatColor.GOLD + rs.get("ID") + "      " + ChatColor.RED + "Owner: " + ChatColor.GOLD + playerName);
-									sender.sendMessage(ChatColor.RED + "Status: " + ChatColor.GOLD + rs.get("Status") + "      " + ChatColor.RED + "Assigned to: " + ChatColor.GOLD + rs.get("Assignee"));
+									sender.sendMessage(ChatColor.RED + "Status: " + ChatColor.GOLD + rs.get("Status") + "      " + ChatColor.RED + "Assigned to: " + ChatColor.GOLD + assignee);
 									sender.sendMessage(ChatColor.RED + "Label: " + ChatColor.GOLD + rs.get("Label"));
 									sender.sendMessage(ChatColor.RED + "Sent from: " + ChatColor.GOLD + rs.get("World") + ":" + rs.get("x") + "," + rs.get("y") + "," + rs.get("z"));
 									sender.sendMessage(ChatColor.RED + "Description: " + ChatColor.GOLD + rs.get("Description"));
@@ -271,6 +287,12 @@ public class Main extends JavaPlugin{
 							sender.sendMessage(logo + "You don't have permission to claim tickets");
 						}
 					}
+					if (args[0].equalsIgnoreCase("cachemyname")){
+						if (sender.hasPermission("ultimateTickets.selfCaching")){
+							Player pl=(Player) sender;
+							cache.put(new Profile(pl.getUniqueId(), pl.getName()));
+						}
+					}
 					if (args[0].equalsIgnoreCase("label")){
 						if (sender.hasPermission("ultimateTickets.label")){
 							if (getRDatabase().setTicket("Label=\"" + args[2] + "\" WHERE ID=" + args[1])==0){
@@ -284,10 +306,21 @@ public class Main extends JavaPlugin{
 					}
 					if (args[0].equalsIgnoreCase("assign")||args[0].equalsIgnoreCase("a")){
 						if (sender.hasPermission("ultimateTickets.assign")){
-							if (getRDatabase().setTicket("Assignee=\"" + args[2] + "\" WHERE ID=" + args[1])==0){
-								sender.sendMessage(logo + "You have assigned this ticket");
-							}else{
-								sender.sendMessage(logo + "The ticket could not be assigned.");
+							try{
+								ProfileService resolver = HttpRepositoryService.forMinecraft();
+								Profile profile = resolver.findByName(args[2]);
+								if (profile != null){
+									cache.put(profile);
+									if (getRDatabase().setTicket("Assignee=\"" + profile.getUniqueId().toString() + "\" WHERE ID=" + args[1])==0){
+										sender.sendMessage(logo + "You have assigned this ticket");
+									}else{
+										sender.sendMessage(logo + "The ticket could not be assigned. Database error occurred.");
+									}
+								}else{
+									sender.sendMessage(logo + "The ticket could not be assigned. The name doesn't exist, control your command.");
+								}
+							}catch (Exception e){
+								sender.sendMessage(logo + "The ticket could not be assigned. Internal error occurred.");
 							}
 						}else{
 							sender.sendMessage(logo + "You don't have permission to assign tickets");
