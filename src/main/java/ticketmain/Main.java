@@ -180,12 +180,14 @@ public class Main extends JavaPlugin{
 									try{
 										assignee = Bukkit.getPlayer(UUID.fromString(rs.get("Assignee"))).getName() + "[Online]";
 									}catch (NullPointerException e){
-										Profile profile = cache.getIfPresent(UUID.fromString(rs.get("Owner")));
+										Profile profile = cache.getIfPresent(UUID.fromString(rs.get("Assignee")));
 										if (profile == null){
 											assignee = "<UNKNOWN PLAYER>";
 										}else{
 											assignee = profile.getName() + "[LKN]";
 										}
+									}catch (IllegalArgumentException e){
+										assignee="<Nobody>";
 									}
 									sender.sendMessage(ChatColor.RED + "ID: " + ChatColor.GOLD + rs.get("ID") + "      " + ChatColor.RED + "Owner: " + ChatColor.GOLD + playerName);
 									sender.sendMessage(ChatColor.RED + "Status: " + ChatColor.GOLD + rs.get("Status") + "      " + ChatColor.RED + "Assigned to: " + ChatColor.GOLD + assignee);
@@ -254,6 +256,7 @@ public class Main extends JavaPlugin{
 								Map<String, String> rs = getRDatabase().getTicketInfo(id);
 								//if (rs.get("Owner").equalsIgnoreCase(((Player) sender).getName()) || sender.hasPermission("ultimateTickets.viewall")){
 								if (rs.get("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || sender.hasPermission("ultimateTickets.viewall")){
+									getLogger().info("Getting comments for ticket: " + rs.toString());
 									ArrayList<String> cmts = getRDatabase().getComments(id);
 									if (cmts.size() == 0){
 										sender.sendMessage(logo + "There are no comments available for this ticket");

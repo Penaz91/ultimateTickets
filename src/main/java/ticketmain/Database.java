@@ -238,6 +238,9 @@ public abstract class Database {
         try {
             conn = getSQLConnection();
             ps = conn.prepareStatement("INSERT INTO Comments (TicketID, Commenter, Text) VALUES (" + id + ",\"" + pl + "\",\"" + comment + "\");");
+            @SuppressWarnings("deprecation")
+			Player player = Bukkit.getServer().getPlayer(pl);
+            Main.cache.put(new Profile(player.getUniqueId(), player.getName()));
             ps.executeUpdate();
             //conn.close();
         } catch (SQLException ex) {
@@ -315,7 +318,16 @@ public abstract class Database {
             ps = conn.prepareStatement("SELECT Commenter, Text FROM Comments WHERE TicketID = " + id + " ORDER BY ID;");
             rs = ps.executeQuery();
             while(rs.next()){
-            	res.add(Bukkit.getPlayer(UUID.fromString(rs.getString("Commenter"))).getName() + ": " + rs.getString("Text"));
+            	Bukkit.getLogger().info("Entro");
+            	UUID uid = UUID.fromString(rs.getString("Commenter"));
+            	Profile prof = Main.cache.getIfPresent(uid);
+            	String commenter = null;
+            	if (prof==null){
+            		commenter = "<Uncached_User>";
+            	}else{
+            		commenter = prof.getName();
+            	}
+            	res.add(commenter + ": " + rs.getString("Text"));
             }
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
@@ -325,6 +337,7 @@ public abstract class Database {
                     ps.close();
                 if (conn != null)
                     conn.close();
+                Bukkit.getLogger().info("Sto per ritornare il risultato: " + res.toString());
                 return res;
             } catch (SQLException ex) {
                 plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
