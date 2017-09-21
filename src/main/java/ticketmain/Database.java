@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -238,9 +239,18 @@ public abstract class Database {
         try {
             conn = getSQLConnection();
             ps = conn.prepareStatement("INSERT INTO Comments (TicketID, Commenter, Text) VALUES (" + id + ",\"" + pl + "\",\"" + comment + "\");");
-            @SuppressWarnings("deprecation")
-			Player player = Bukkit.getServer().getPlayer(pl);
-            Main.cache.put(new Profile(player.getUniqueId(), player.getName()));
+			Collection<? extends Player> onlineList = Bukkit.getServer().getOnlinePlayers();
+			Player player = null;
+			for (Player Pl:onlineList){
+				if (Pl.getUniqueId().equals(UUID.fromString(pl))){
+					player = Pl;
+				}
+			}
+			if (player != null){
+				Main.cache.put(new Profile(player.getUniqueId(), player.getName()));
+			}else{
+				Bukkit.getServer().getLogger().info("Could not cache player: "+pl);
+			}
             ps.executeUpdate();
             //conn.close();
         } catch (SQLException ex) {
