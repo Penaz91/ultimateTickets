@@ -48,6 +48,21 @@ public class Main extends JavaPlugin{
 			e.printStackTrace();
 		}
     }
+    
+    public boolean reloadConfigCommand(){
+		reloadConfig();
+    	config = this.getConfig(); //loads the config
+		sendEmail = config.getBoolean("sendMail");
+        this.db = new SQLite(this);
+        this.db.load();
+        File file = new File(getDataFolder(), "UUIDcache.sqlite");
+        try {
+			cache = new SQLiteCache(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return true;
+    }
 
 	public Database getRDatabase() {
 	        return this.db;
@@ -96,7 +111,17 @@ public class Main extends JavaPlugin{
 					if (sender.hasPermission("ultimateTickets.selfCaching")){
 						sender.sendMessage(ChatColor.RED + "/ticket cachemyname" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Force the caching of your UUID and Nickname, use in case of <Unknown player> in the 'assignee' field");
 					}
+					if (sender.hasPermission("ultimateTickets.reload")){
+						sender.sendMessage(ChatColor.RED + "/ticket reload" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reloads the Configuration files");
+					}
 				}else{
+					if (args[0].equalsIgnoreCase("reload")){
+						if (sender.hasPermission("ultimateTickets.reload")){
+							reloadConfigCommand();
+							getLogger().info(logo + "Configuration Reloaded");
+							sender.sendMessage(logo + "Configuration Reloaded");
+						}
+					}
 					if (args[0].equalsIgnoreCase("new") || args[0].equalsIgnoreCase("n")){
 						String desc = "";
 						for (int i=1; i < args.length; i++){
