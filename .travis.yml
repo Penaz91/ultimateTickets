@@ -1,0 +1,10 @@
+language: java
+deploy:
+  provider: releases
+  api_key:
+    secure: lbRC/Nx+MPSPNCTTnbeJoy4yVOdTZagydFlCl0QHI12XHf2PfbpWg25fmej7lk8eh86KiM36HKIsGT2P+jrKAwTKHIEY06enXcNVA0rPgR2b3n/ZPuxGI95YNT12Y6tfxYVXNYznDK/fSFJ88G5XKwDUlAeIzoHRXRHUU4/dWb5j9sPxYpFID3mdcuN2VLFbQ4W9XW2i7TkWA5bjUps8WrXs//3bjc09wnmy2eRXwX0ILhXsUECd1W+dkND1L9Hac/CCU2XkdLPsSrY+nOL7/wagU09lN31n/jU3d5YvbcbZM5gkcDbnHPWNhi2d7kJ3kOf1zh873NXlG22tVbYt2eVl5V/yrrlUZ8lDMFgn5Agnz32mdrK3u0u8mBzimIJSIIAx71Rdh/Q7oommKAXuj4U8AcFw3oU+SrR3g6uasuoEZw4XugDwgCIZaGcrL7CilJKC2wIgu/7i6JfBonFypLMDJ/OhPnCeNUXHyyArPFv5A5C68Xs+JJcGZOfobCrKD+zOIh4I6g1a5PmUqywtZr8y1QjElfk/EG4CCfBGAOJ1wgRBwNwWKiKTHsqcLsxOzXxNASRsHT8Fe9Vn41woNjbVigfFtvCbGlL1SJ+0XuozqwxdRpsgx+m/86hHLYl3ZlKM3ehyGrWkoKLVzx7muMgvcnW0ZvWNBUqzKEw7rXI=
+  file: target/ultimateTickets-0.0.2-SNAPSHOT.jar
+  on:
+    repo: Penaz91/ultimateTickets
+  skip_cleanup: true
+  name: 0.0.2 Build $(date +'%d/%m/%Y %R')
