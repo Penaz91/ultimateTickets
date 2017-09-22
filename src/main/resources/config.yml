@@ -1,1 +1,6 @@
 sendMail: true
+customLabels:
+  "Bug": "Label this ticket as a bug"
+  "Suggestion": "Label this ticket as a suggestion"
+  "Grief": "Use this in case of griefing"
+  "NeedsReply": "This ticket is waiting for a reply"

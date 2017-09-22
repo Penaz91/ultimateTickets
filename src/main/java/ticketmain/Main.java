@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.UUID;
 
 import mkremins.fanciful.FancyMessage;
@@ -15,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,6 +30,9 @@ public class Main extends JavaPlugin{
 	static Configuration config;
 	static boolean sendEmail;
 	static SQLiteCache cache = null;
+	static ConfigurationSection labelsConfig = null;
+	static Random rng = new Random();
+	static ChatColor[] visibleColors = {ChatColor.GREEN, ChatColor.DARK_AQUA, ChatColor.DARK_RED, ChatColor.DARK_PURPLE, ChatColor.GOLD, ChatColor.BLUE, ChatColor.DARK_GREEN, ChatColor.AQUA, ChatColor.RED, ChatColor.LIGHT_PURPLE, ChatColor.YELLOW, ChatColor.WHITE};
 
     private Database db;
 
@@ -47,6 +52,7 @@ public class Main extends JavaPlugin{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        labelsConfig = config.getConfigurationSection("customLabels");
     }
     
     public boolean reloadConfigCommand(){
@@ -61,11 +67,20 @@ public class Main extends JavaPlugin{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        labelsConfig = config.getConfigurationSection("customLabels");
         return true;
     }
 
 	public Database getRDatabase() {
 	        return this.db;
+	}
+	
+	public static ChatColor getRandomColor(ChatColor lastColor) {
+		ChatColor color = visibleColors[rng.nextInt(12)];
+		while (color == lastColor){
+			color = visibleColors[rng.nextInt(12)];
+		}
+		return color;
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -234,12 +249,19 @@ public class Main extends JavaPlugin{
 										assignments.send(sender);
 									}
 									if (sender.hasPermission("ultimateTickets.label")){
-										FancyMessage labels = new FancyMessage("Label: ").color(ChatColor.GOLD).then("[InvLoss]").color(ChatColor.DARK_AQUA).command("/tkt label "+id+" InvLoss").tooltip("Label this ticket as Inventory Loss");
+										/*FancyMessage labels = new FancyMessage("Label: ").color(ChatColor.GOLD).then("[InvLoss]").color(ChatColor.DARK_AQUA).command("/tkt label "+id+" InvLoss").tooltip("Label this ticket as Inventory Loss");
 										labels.then(" ").then("[Bug]").color(ChatColor.DARK_RED).command("/tkt label " + id + " Bug").tooltip("Label this ticket as Bug");
 										labels.then(" ").then("[Suggestion]").color(ChatColor.GOLD).command("/tkt label " + id + " Suggestion").tooltip("Label this ticket as suggestion");
 										labels.then(" ").then("[Grief]").color(ChatColor.RED).command("/tkt label " + id + " Grief").tooltip("Label this ticket as Grief");
 										labels.then(" ").then("[Heroes]").color(ChatColor.AQUA).command("/tkt label " + id + " Heroes").tooltip("Label the issue as Heroes");
 										labels.then(" ").then("[NeedsReply]").color(ChatColor.DARK_PURPLE).command("/tkt label " + id + " NeedsReply").tooltip("Label the ticket as in need of reply");
+										labels.then(" ").then("[Custom]").color(ChatColor.GRAY).suggest("/tkt label " + id + " ").tooltip("Use a custom label");*/
+										FancyMessage labels = new FancyMessage("Label: ").color(ChatColor.GOLD);
+										ChatColor lastColor = null;
+										for (String lbl: labelsConfig.getKeys(false)){
+											lastColor= getRandomColor(lastColor);
+											labels.then(" ").then("[" + lbl + "]").color(lastColor).suggest("/tkt label " + id + " " + lbl).tooltip(labelsConfig.getString(lbl));
+										}
 										labels.then(" ").then("[Custom]").color(ChatColor.GRAY).suggest("/tkt label " + id + " ").tooltip("Use a custom label");
 										labels.send(sender);
 									}
