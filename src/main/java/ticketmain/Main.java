@@ -135,7 +135,7 @@ public class Main extends JavaPlugin{
 					}
 				}else{
 					if (args[0].equalsIgnoreCase("version")){
-						if (sender.hasPermission("")){
+						if (sender.hasPermission("ultimateTicket.viewInfo")){
 							sender.sendMessage(ChatColor.GOLD + "---------------<>---------------");
 							sender.sendMessage(logo + " - " + ChatColor.GOLD + "Yet another SQLite Ticket Manager Plugin");
 							sender.sendMessage(ChatColor.GOLD + "Proudly brought to you by: Penaz");
