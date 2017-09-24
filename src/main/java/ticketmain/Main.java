@@ -27,6 +27,7 @@ import com.sk89q.squirrelid.resolver.ProfileService;
 
 public class Main extends JavaPlugin{
 	static final String logo = ChatColor.RED + "[" + ChatColor.GOLD + "UltimateTickets" + ChatColor.RED + "] " + ChatColor.GOLD;
+	static final String defaultPermissionMessage = ChatColor.RED + " You don't have permissions to execute this command!";
 	static Configuration config;
 	static boolean sendEmail;
 	static SQLiteCache cache = null;
@@ -118,7 +119,7 @@ public class Main extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "/ticket purge" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Purge all closed tickets, to free up the database");
 					}
 					if (sender.hasPermission("ultimateTickets.search")){
-						sender.sendMessage(ChatColor.RED + "/ticket search <owner|label> <text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Purge all closed tickets, to free up the database");
+						sender.sendMessage(ChatColor.RED + "/ticket search <owner|label> <text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Search among the tickets, by owner or label");
 					}
 					if (sender.hasPermission("ultimateTickets.reopen")){
 						sender.sendMessage(ChatColor.RED + "/ticket reopen <ID>" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reopen a closed ticket");
@@ -129,12 +130,28 @@ public class Main extends JavaPlugin{
 					if (sender.hasPermission("ultimateTickets.reload")){
 						sender.sendMessage(ChatColor.RED + "/ticket reload" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reloads the Configuration files");
 					}
+					if (sender.hasPermission("ultimateTickets.viewInfo")){
+						sender.sendMessage(ChatColor.RED + "/ticket version" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "View Information about this plugin");
+					}
 				}else{
+					if (args[0].equalsIgnoreCase("version")){
+						if (sender.hasPermission("")){
+							sender.sendMessage(ChatColor.GOLD + "---------------<>---------------");
+							sender.sendMessage(logo + " - " + ChatColor.GOLD + "Yet another SQLite Ticket Manager Plugin");
+							sender.sendMessage(ChatColor.GOLD + "Proudly brought to you by: Penaz");
+							sender.sendMessage(ChatColor.GOLD + "Version: 0.0.2 - SNAPSHOT");
+							sender.sendMessage(ChatColor.GOLD + "---------------<>---------------");
+						}else{
+							sender.sendMessage(logo + defaultPermissionMessage);
+						}
+					}
 					if (args[0].equalsIgnoreCase("reload")){
 						if (sender.hasPermission("ultimateTickets.reload")){
 							reloadConfigCommand();
 							getLogger().info(logo + "Configuration Reloaded");
 							sender.sendMessage(logo + "Configuration Reloaded");
+						}else{
+							sender.sendMessage(logo + defaultPermissionMessage);
 						}
 					}
 					if (args[0].equalsIgnoreCase("new") || args[0].equalsIgnoreCase("n")){
@@ -249,18 +266,11 @@ public class Main extends JavaPlugin{
 										assignments.send(sender);
 									}
 									if (sender.hasPermission("ultimateTickets.label")){
-										/*FancyMessage labels = new FancyMessage("Label: ").color(ChatColor.GOLD).then("[InvLoss]").color(ChatColor.DARK_AQUA).command("/tkt label "+id+" InvLoss").tooltip("Label this ticket as Inventory Loss");
-										labels.then(" ").then("[Bug]").color(ChatColor.DARK_RED).command("/tkt label " + id + " Bug").tooltip("Label this ticket as Bug");
-										labels.then(" ").then("[Suggestion]").color(ChatColor.GOLD).command("/tkt label " + id + " Suggestion").tooltip("Label this ticket as suggestion");
-										labels.then(" ").then("[Grief]").color(ChatColor.RED).command("/tkt label " + id + " Grief").tooltip("Label this ticket as Grief");
-										labels.then(" ").then("[Heroes]").color(ChatColor.AQUA).command("/tkt label " + id + " Heroes").tooltip("Label the issue as Heroes");
-										labels.then(" ").then("[NeedsReply]").color(ChatColor.DARK_PURPLE).command("/tkt label " + id + " NeedsReply").tooltip("Label the ticket as in need of reply");
-										labels.then(" ").then("[Custom]").color(ChatColor.GRAY).suggest("/tkt label " + id + " ").tooltip("Use a custom label");*/
 										FancyMessage labels = new FancyMessage("Label: ").color(ChatColor.GOLD);
 										ChatColor lastColor = null;
 										for (String lbl: labelsConfig.getKeys(false)){
 											lastColor= getRandomColor(lastColor);
-											labels.then(" ").then("[" + lbl + "]").color(lastColor).suggest("/tkt label " + id + " " + lbl).tooltip(labelsConfig.getString(lbl));
+											labels.then(" ").then("[" + lbl + "]").color(lastColor).command("/tkt label " + id + " " + lbl).tooltip(labelsConfig.getString(lbl));
 										}
 										labels.then(" ").then("[Custom]").color(ChatColor.GRAY).suggest("/tkt label " + id + " ").tooltip("Use a custom label");
 										labels.send(sender);
@@ -453,15 +463,18 @@ public class Main extends JavaPlugin{
 					}
 					if (args[0].equalsIgnoreCase("purge")){
 						if (sender.hasPermission("ultimateTickets.purge")){
-							/*if (args.length == 1){
+							if (args.length == 1){
 								sender.sendMessage(logo + "This will purge the database of all closed tickets, type '/ticket purge force' to force the removal");
 							}else{
 								if (args[1].equalsIgnoreCase("force")){
-									getRDatabase().purgeTickets();
-									sender.sendMessage(logo + "The Ticket database has been forcibly purged of closed tickets");
+									boolean done = getRDatabase().purgeTickets();
+									if (done){
+										sender.sendMessage(logo + "The Ticket database has been forcibly purged of closed tickets and comments");
+									}else{
+										sender.sendMessage(logo + "Ticket purge failed, please check console and logs for more information about the errors");
+									}
 								}
-							}*/
-							sender.sendMessage(logo + "This command has been disabled due to bugs");
+							}
 							return true;
 						}
 					}
@@ -471,11 +484,30 @@ public class Main extends JavaPlugin{
 								sender.sendMessage("Usage: /ticket search <owner|label> ID");
 							}else{
 								if (args[1].equalsIgnoreCase("owner")){
-									Map<String, String> rs = getRDatabase().getTicketHeaders("Status='Open' AND Owner LIKE '%" + args[2] + "%'");
+									sender.sendMessage(logo + "Fetching UUID for '" + args[2] + "', please wait");
+									ProfileService resolver = HttpRepositoryService.forMinecraft();
+									Profile owner = null;
+									try {
+										owner = resolver.findByName(args[2]);
+									} catch (IOException e) {
+										sender.sendMessage(logo + "There has been an exception while resolving the username, please check the logs or console for more information.");
+										e.printStackTrace();
+										return true;
+									} catch (InterruptedException e) {
+										sender.sendMessage(logo + "There has been an exception while resolving the username, please check the logs or console for more information.");
+										e.printStackTrace();
+										return true;
+									}
+									if (owner == null){
+										sender.sendMessage(logo + "This username doesn't exist!");
+										return true;
+									}
+									Map<String, String> rs = getRDatabase().getTicketHeaders("Status='Open' AND Owner LIKE '%" + owner.getUniqueId() + "%'");
 									//TODO: There is no pagination!
 									if (rs.size() == 0){
 										sender.sendMessage(logo + "There are no tickets that match this search criteria");
 									}else{
+										sender.sendMessage(ChatColor.GOLD + "Tickets found that match your criteria:");
 										sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 										for(Map.Entry<String, String> entry: rs.entrySet()){
 											FancyMessage msg = new FancyMessage("[" + entry.getKey() + "] ").color(ChatColor.RED).command("/tkt v info " + entry.getKey()).tooltip("View this ticket's info").then(entry.getValue()).color(ChatColor.GOLD);
@@ -605,6 +637,8 @@ public class Main extends JavaPlugin{
 						}	
 					}
 				}
+			}else{
+				sender.sendMessage(logo + "Only players can execute this command!");
 			}
 		}
 		return true;

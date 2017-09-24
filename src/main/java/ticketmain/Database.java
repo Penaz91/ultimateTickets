@@ -109,17 +109,19 @@ public abstract class Database {
         return null; 
     }
     
-    public void purgeTickets(){
+    public boolean purgeTickets(){
     	Connection conn = null;
         PreparedStatement ps = null;
+        PreparedStatement ps1 = null;
+        PreparedStatement ps2 = null;
         try {
             conn = getSQLConnection();
-           // ps = conn.prepareStatement("PRAGMA foreign_keys=ON");
-           // ps.executeQuery();
-           // ps.close();
-            //FIXME: Doesn't clean Comment table and hotspot table
-            ps = conn.prepareStatement("DELETE FROM Tickets WHERE Status='Closed';");
+            ps = conn.prepareStatement("DELETE FROM Comments WHERE TicketID IN (SELECT Comments.ID from Tickets, Comments where Tickets.ID==Comments.TicketID AND Tickets.Status=='Closed');");
             ps.executeUpdate();
+            ps1 = conn.prepareStatement("DELETE FROM HotSpots WHERE TicketID IN (SELECT HotSpots.ID from Tickets, HotSpots where Tickets.ID==HotSpots.TicketID AND Tickets.Status=='Closed');");
+            ps1.executeUpdate();
+            ps2 = conn.prepareStatement("DELETE FROM Tickets WHERE Status='Closed';");
+            ps2.executeUpdate();
             
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
@@ -127,12 +129,18 @@ public abstract class Database {
             try {
                 if (ps != null && !ps.isClosed())
                     ps.close();
+                if (ps1 != null && !ps1.isClosed())
+                    ps1.close();
+                if (ps2 != null && !ps2.isClosed())
+                    ps2.close();
                 if (conn != null)
                     conn.close();
             } catch (SQLException ex) {
                 plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+                return false;
             }
         }
+        return true;
     }
     
     public Map<String, String> getTicketHeaders(String condition){
