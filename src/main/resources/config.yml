@@ -1,4 +1,12 @@
+# Whether to send a mail to the parts involved in the ticket
 sendMail: true
+# Define the default action to perform when only "/ticket" is performed
+# Possible values:
+# "help" - Show helpfile
+# "list" - Lists open tickets for staff, for players it shows their open tickets
+# "info" - Shows plugin information
+defaultAction: "info" 
+# Set your custom labels here
 customLabels:
   "Bug": "Label this ticket as a bug"
   "Suggestion": "Label this ticket as a suggestion"

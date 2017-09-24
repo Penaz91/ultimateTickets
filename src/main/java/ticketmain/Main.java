@@ -34,6 +34,7 @@ public class Main extends JavaPlugin{
 	static ConfigurationSection labelsConfig = null;
 	static Random rng = new Random();
 	static ChatColor[] visibleColors = {ChatColor.GREEN, ChatColor.DARK_AQUA, ChatColor.DARK_RED, ChatColor.DARK_PURPLE, ChatColor.GOLD, ChatColor.BLUE, ChatColor.DARK_GREEN, ChatColor.AQUA, ChatColor.RED, ChatColor.LIGHT_PURPLE, ChatColor.YELLOW, ChatColor.WHITE};
+	static String defaultAction = "";
 
     private Database db;
 
@@ -54,6 +55,7 @@ public class Main extends JavaPlugin{
 			e.printStackTrace();
 		}
         labelsConfig = config.getConfigurationSection("customLabels");
+        defaultAction = config.getString("defaultAction");
     }
     
     public boolean reloadConfigCommand(){
@@ -69,6 +71,7 @@ public class Main extends JavaPlugin{
 			e.printStackTrace();
 		}
         labelsConfig = config.getConfigurationSection("customLabels");
+        defaultAction = config.getString("defaultAction");
         return true;
     }
 
@@ -88,52 +91,69 @@ public class Main extends JavaPlugin{
 		if (cmd.getName().equalsIgnoreCase("ticket")) {
 			if (sender instanceof Player){
 				if (args.length == 0){
-					sender.sendMessage(ChatColor.RED + "Usage:");
-					sender.sendMessage(ChatColor.RED + "/ticket" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows this list");
-					sender.sendMessage(ChatColor.RED + "/ticket new <issue>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Create a new issue");
-					if (sender.hasPermission("ultimateTickets.listall")){
-						sender.sendMessage(ChatColor.RED + "/ticket list all" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows all tickets, open and closed");
-						sender.sendMessage(ChatColor.RED + "/ticket list unassigned" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows all unassigned tickets");
-						sender.sendMessage(ChatColor.RED + "/ticket list open" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows open tickets");
-						sender.sendMessage(ChatColor.RED + "/ticket list claimed" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows tickets you claimed");
+					if (defaultAction.equalsIgnoreCase("help")){
+						args = new String[1];
+						args[0] = "help";
 					}
-					sender.sendMessage(ChatColor.RED + "/ticket list mine" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows the tickets you opened");
-					if (sender.hasPermission("ultimateTickets.teleport")){
-						sender.sendMessage(ChatColor.RED + "/ticket teleport <ID> <HS>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Teleports you to a certain ticket or one of its hotspots");
+					if (defaultAction.equalsIgnoreCase("info")){
+						args = new String[1];
+						args[0] = "version";
 					}
-					sender.sendMessage(ChatColor.RED + "/ticket view info <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Check the ticket information");
-					sender.sendMessage(ChatColor.RED + "/ticket view comment <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "List all Ticket comments");
-					sender.sendMessage(ChatColor.RED + "/ticket view hotspot <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "List all Ticket hotspots");
-					sender.sendMessage(ChatColor.RED + "/ticket hotspot <ID> <Comment>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Add a hotspot to your ticket");
-					if (sender.hasPermission("ultimateTickets.close")){
-						sender.sendMessage(ChatColor.RED + "/ticket close <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Close a ticket");
+					if (defaultAction.equalsIgnoreCase("list")){
+						args = new String[2];
+						args[0] = "list";
+						args[1] = "open";
 					}
-					if (sender.hasPermission("ultimateTickets.assign")){
-						sender.sendMessage(ChatColor.RED + "/ticket assign <ID> <Text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to another staff player");
-						sender.sendMessage(ChatColor.RED + "/ticket claim <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to yourself");
+				}
+				if (args.length > 0){
+					if (args[0].equalsIgnoreCase("help")){
+						sender.sendMessage(ChatColor.RED + "Usage:");
+						sender.sendMessage(ChatColor.RED + "/ticket" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Performs a default action set in the config file");
+						sender.sendMessage(ChatColor.RED + "/ticket help" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows this help screen");
+						sender.sendMessage(ChatColor.RED + "/ticket new <issue>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Create a new issue");
+						if (sender.hasPermission("ultimateTickets.listall")){
+							sender.sendMessage(ChatColor.RED + "/ticket list all" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows all tickets, open and closed");
+							sender.sendMessage(ChatColor.RED + "/ticket list unassigned" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows all unassigned tickets");
+							sender.sendMessage(ChatColor.RED + "/ticket list open" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows open tickets");
+							sender.sendMessage(ChatColor.RED + "/ticket list claimed" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows tickets you claimed");
+						}
+						sender.sendMessage(ChatColor.RED + "/ticket list mine" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Shows the tickets you opened");
+						if (sender.hasPermission("ultimateTickets.teleport")){
+							sender.sendMessage(ChatColor.RED + "/ticket teleport <ID> <HS>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Teleports you to a certain ticket or one of its hotspots");
+						}
+						sender.sendMessage(ChatColor.RED + "/ticket view info <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Check the ticket information");
+						sender.sendMessage(ChatColor.RED + "/ticket view comment <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "List all Ticket comments");
+						sender.sendMessage(ChatColor.RED + "/ticket view hotspot <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "List all Ticket hotspots");
+						sender.sendMessage(ChatColor.RED + "/ticket hotspot <ID> <Comment>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Add a hotspot to your ticket");
+						if (sender.hasPermission("ultimateTickets.close")){
+							sender.sendMessage(ChatColor.RED + "/ticket close <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Close a ticket");
+						}
+						if (sender.hasPermission("ultimateTickets.assign")){
+							sender.sendMessage(ChatColor.RED + "/ticket assign <ID> <Text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to another staff player");
+							sender.sendMessage(ChatColor.RED + "/ticket claim <ID>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Assign a ticket to yourself");
+						}
+						if (sender.hasPermission("ultimateTickets.label")){
+							sender.sendMessage(ChatColor.RED + "/ticket label <ID> <One-word-label>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Give a label to the ticket");
+						}
+						if (sender.hasPermission("ultimateTickets.purge")){
+							sender.sendMessage(ChatColor.RED + "/ticket purge" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Purge all closed tickets, to free up the database");
+						}
+						if (sender.hasPermission("ultimateTickets.search")){
+							sender.sendMessage(ChatColor.RED + "/ticket search <owner|label> <text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Search among the tickets, by owner or label");
+						}
+						if (sender.hasPermission("ultimateTickets.reopen")){
+							sender.sendMessage(ChatColor.RED + "/ticket reopen <ID>" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reopen a closed ticket");
+						}
+						if (sender.hasPermission("ultimateTickets.selfCaching")){
+							sender.sendMessage(ChatColor.RED + "/ticket cachemyname" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Force the caching of your UUID and Nickname, use in case of <Unknown player> in the 'assignee' field");
+						}
+						if (sender.hasPermission("ultimateTickets.reload")){
+							sender.sendMessage(ChatColor.RED + "/ticket reload" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reloads the Configuration files");
+						}
+						if (sender.hasPermission("ultimateTickets.viewInfo")){
+							sender.sendMessage(ChatColor.RED + "/ticket version" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "View Information about this plugin");
+						}
 					}
-					if (sender.hasPermission("ultimateTickets.label")){
-						sender.sendMessage(ChatColor.RED + "/ticket label <ID> <One-word-label>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Give a label to the ticket");
-					}
-					if (sender.hasPermission("ultimateTickets.purge")){
-						sender.sendMessage(ChatColor.RED + "/ticket purge" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Purge all closed tickets, to free up the database");
-					}
-					if (sender.hasPermission("ultimateTickets.search")){
-						sender.sendMessage(ChatColor.RED + "/ticket search <owner|label> <text>" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "Search among the tickets, by owner or label");
-					}
-					if (sender.hasPermission("ultimateTickets.reopen")){
-						sender.sendMessage(ChatColor.RED + "/ticket reopen <ID>" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reopen a closed ticket");
-					}
-					if (sender.hasPermission("ultimateTickets.selfCaching")){
-						sender.sendMessage(ChatColor.RED + "/ticket cachemyname" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Force the caching of your UUID and Nickname, use in case of <Unknown player> in the 'assignee' field");
-					}
-					if (sender.hasPermission("ultimateTickets.reload")){
-						sender.sendMessage(ChatColor.RED + "/ticket reload" + ChatColor.DARK_PURPLE +  " - " + ChatColor.GOLD + "Reloads the Configuration files");
-					}
-					if (sender.hasPermission("ultimateTickets.viewInfo")){
-						sender.sendMessage(ChatColor.RED + "/ticket version" + ChatColor.DARK_PURPLE + " - " + ChatColor.GOLD + "View Information about this plugin");
-					}
-				}else{
 					if (args[0].equalsIgnoreCase("version")){
 						if (sender.hasPermission("ultimateTicket.viewInfo")){
 							sender.sendMessage(ChatColor.GOLD + "---------------<>---------------");
@@ -141,6 +161,7 @@ public class Main extends JavaPlugin{
 							sender.sendMessage(ChatColor.GOLD + "Proudly brought to you by: Penaz");
 							sender.sendMessage(ChatColor.GOLD + "Version: 0.0.2 - SNAPSHOT");
 							sender.sendMessage(ChatColor.GOLD + "---------------<>---------------");
+							sender.sendMessage(ChatColor.GOLD + "Check " + ChatColor.DARK_PURPLE + "/ticket help " + ChatColor.GOLD + "for instructions on how to use this plugin.");
 						}else{
 							sender.sendMessage(logo + defaultPermissionMessage);
 						}
@@ -560,7 +581,19 @@ public class Main extends JavaPlugin{
 										sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
 									}
 								}else{
-									sender.sendMessage("You don't have permission to list open tickets");
+									Map<String, String> rs=getRDatabase().getTicketHeaders("Status='Open' AND Owner =\"" + ((Player) sender).getUniqueId().toString() + "\" ORDER BY Status DESC" );
+									if (rs.size() == 0){
+										sender.sendMessage(logo + "You have no open tickets");
+									}else{
+										//TODO: There is no pagination!
+										sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
+										for(Map.Entry<String, String> entry: rs.entrySet()){
+											FancyMessage msg = new FancyMessage("[" + entry.getKey() + "] ").color(ChatColor.RED).command("/tkt v info " + entry.getKey()).tooltip("View this ticket's info").then(entry.getValue()).color(ChatColor.GOLD);
+											msg.send(sender);
+											//sender.sendMessage(ChatColor.RED + "[" + entry.getKey() + "] " + ChatColor.GOLD + entry.getValue());
+										}
+										sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
+									}
 								}
 							}
 							if (args[1].equalsIgnoreCase("unassigned")){
@@ -606,7 +639,7 @@ public class Main extends JavaPlugin{
 								//Map<String, String> rs=getRDatabase().getTicketHeaders("Owner =\"" + ((Player) sender).getName() + "\" ORDER BY Status DESC" );
 								Map<String, String> rs=getRDatabase().getTicketHeaders("Owner =\"" + ((Player) sender).getUniqueId().toString() + "\" ORDER BY Status DESC" );
 								if (rs.size() == 0){
-									sender.sendMessage(logo + "You have no tickets");
+									sender.sendMessage(logo + "You have no open tickets");
 								}else{
 									//TODO: There is no pagination!
 									sender.sendMessage(ChatColor.GOLD + "--------------------<>--------------------");
