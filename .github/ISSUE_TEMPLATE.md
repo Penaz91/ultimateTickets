@@ -16,7 +16,7 @@
 
 **Further useful details:**
 
-<!-- Insert other useful detauls here, be as precise as possible,
+<!-- Insert other useful details here, be as precise as possible,
 don't insert Stack Backtraces here or long error messages, instead zip
 and attach them -->
 
