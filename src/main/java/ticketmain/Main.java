@@ -440,6 +440,10 @@ public class Main extends JavaPlugin{
 					if (args[0].equalsIgnoreCase("comment")||args[0].equalsIgnoreCase("com")){
 						String id = args[1];
 						Map<String, String> rs = getRDatabase().getTicketInfo(id);
+						if (rs.isEmpty()){
+							sender.sendMessage(logo + "There is an error in your syntax or the ticket ID doesn't exist, make sure you're typing the correct command: " + ChatColor.DARK_RED + "/tkt com <ID> <Comment>");
+							return true;
+						}
 						//if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getName())){
 						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getUniqueId().toString())){
 							String comment = "";
@@ -456,8 +460,8 @@ public class Main extends JavaPlugin{
 								}
 								return true;
 							}else{
-								sender.sendMessage(logo + "There has been an error, your comment might have been lost");
-								return false;
+									sender.sendMessage(logo + "There has been an error, your comment might have been lost");
+									return false;
 							}
 						}else{
 							sender.sendMessage(logo + "You can't comment other people's tickets, check your ticket ID");
@@ -466,6 +470,10 @@ public class Main extends JavaPlugin{
 					if (args[0].equalsIgnoreCase("hotspot")||args[0].equalsIgnoreCase("hs")){
 						String id = args[1];
 						Map<String, String> rs = getRDatabase().getTicketInfo(id);
+						if (rs.isEmpty()){
+							sender.sendMessage(logo + "There is an error in your syntax or the ticket ID doesn't exist, make sure you're typing the correct command: " + ChatColor.DARK_RED + "/tkt com <ID> <Comment>");
+							return true;
+						}
 						//if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getName())){
 						if (sender.hasPermission("ultimateTickets.commentOthers") || rs.get("Owner").equals(((Player) sender).getUniqueId().toString())){
 							String comment = "";
@@ -477,8 +485,8 @@ public class Main extends JavaPlugin{
 								sender.sendMessage(logo + "Your hotspot has been added to ticket #" + id);
 								return true;
 							}else{
-								sender.sendMessage(logo + "There has been an error, your hotspot might have been lost");
-								return false;
+									sender.sendMessage(logo + "There has been an error, your hotspot might have been lost");
+									return false;
 							}
 						}
 					}
